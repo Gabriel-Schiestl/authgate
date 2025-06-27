@@ -1,0 +1,79 @@
+syntax = "proto3";
+
+package auth;
+
+option go_package = "/authpb";
+
+service AuthService {
+    rpc Login(LoginRequest) returns (LoginResponse);
+    rpc Register(RegisterRequest) returns (RegisterResponse);
+    rpc VerifyToken(VerifyTokenRequest) returns (VerifyTokenResponse);
+    rpc DeleteAuth(DeleteAuthRequest) returns (DeleteAuthResponse);
+}
+
+enum IdentifierType {
+    IDENTIFIER_TYPE_UNSPECIFIED = 0;
+    IDENTIFIER_TYPE_EMAIL = 1;
+    IDENTIFIER_TYPE_CPF = 2;
+    IDENTIFIER_TYPE_CNPJ = 3;
+    IDENTIFIER_TYPE_PHONE = 4;
+}
+
+message LoginRequest {
+    IdentifierType identifier_type = 1;
+    string identifier_value = 2;
+    string password = 3;
+}
+
+message RegisterRequest {
+    IdentifierType identifier_type = 1;
+    string identifier_value = 2;
+    string password = 3;
+    UserInfo user_info = 4;
+    bool encrypt_token = 5;
+    optional int32 max_wrong_attempts = 6;
+    optional int32 max_token_age_seconds = 7;
+}
+
+message LoginResponse {
+    bool success = 1;
+    string access_token = 2;
+    string refresh_token = 3;
+    optional string error_message = 4;
+    UserInfo user_info = 5;
+}
+
+message RegisterResponse {
+    bool success = 1;
+    optional string error_message = 2;
+    IdentifierType identifier_type = 3;
+    string identifier_value = 4;
+    UserInfo user_info = 5;
+}
+
+message UserInfo {
+    string user_id = 1;
+    string name = 2;
+    repeated string roles = 3;
+}
+
+message VerifyTokenRequest {
+    string access_token = 1;
+}
+
+message VerifyTokenResponse {
+    bool success = 1;
+    string user_id = 2;
+    string name = 3;
+    repeated string roles = 4;
+    optional string error_message = 5;
+}
+
+message DeleteAuthRequest {
+    string user_id = 1;
+}
+
+message DeleteAuthResponse {
+    bool success = 1;
+    optional string error_message = 2;
+}
