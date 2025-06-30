@@ -20,16 +20,16 @@ type UserInfoProps struct {
 	Roles  []string
 }
 
-func NewUserInfo(props UserInfoProps) (*exceptions.BusinessException, UserInfo) {
+func NewUserInfo(props UserInfoProps) (UserInfo, *exceptions.BusinessException) {
 	if props.UserID == "" {
-		return exceptions.NewBusinessException("user ID cannot be empty"), nil
+		return nil, exceptions.NewBusinessException("user ID cannot be empty")
 	}
 
-	return nil, &userInfo{
+	return &userInfo{
 		userID: props.UserID,
 		name:   props.Name,
 		roles:  props.Roles,
-	}
+	}, nil
 }
 
 func (u *userInfo) GetUserID() string {
