@@ -9,8 +9,7 @@ type Auth struct {
 	IdentifierType     IdentifierType `gorm:"type:int;not null"`
 	IdentifierValue    string                `gorm:"not null"`
 	Password           string                `gorm:"not null"`
-	UserInfoID	   string                `gorm:"not null;type:uuid"`
-	UserInfo 		  UserInfo              `gorm:"foreignKey:UserInfoID"`
+	UserInfo           UserInfo       `gorm:"foreignKey:AuthID;references:ID"`
 	EncryptToken       bool                  `gorm:"default:false"`
 	LastLoginAt        *time.Time            `gorm:"default:null"`
 	WrongAttempts      int                   `gorm:"not null"`
