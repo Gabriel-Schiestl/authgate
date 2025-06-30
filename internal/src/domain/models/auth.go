@@ -9,7 +9,7 @@ import (
 
 type Auth interface {
 	GetID() string
-	GetIdentifierType() string
+	GetIdentifierType() IdentifierType
 	GetIdentifierValue() string
 	GetPassword() string
 	GetUserInfo() UserInfo
@@ -17,27 +17,11 @@ type Auth interface {
 	GetLastLoginAt() *time.Time
 	GetWrongAttempts() int
 	GetMaxWrongAttempts() *int
-	GetRecoveryToken() string
+	GetRecoveryToken() *string
 	GetMaxTokenAgeSeconds() *int
-	GetCreatedAt() *time.Time
 }
 
 type auth struct {
-	id    string
-	identifierType string
-	identifierValue string
-	password string
-	userInfo UserInfo
-	encryptToken bool
-	lastLoginAt *time.Time
-	wrongAttempts int
-	maxWrongAttempts *int
-	recoveryToken string
-	maxTokenAgeSeconds *int
-	createdAt *time.Time
-}
-
-type AuthProps struct {
 	id    string
 	identifierType IdentifierType
 	identifierValue string
@@ -47,47 +31,53 @@ type AuthProps struct {
 	lastLoginAt *time.Time
 	wrongAttempts int
 	maxWrongAttempts *int
-	recoveryToken string
+	recoveryToken *string
 	maxTokenAgeSeconds *int
-	createdAt *time.Time
 }
 
-func NewAuth(props AuthProps) (*exceptions.BusinessException, Auth) {
-	if props.identifierType == 0 {
-		return exceptions.NewBusinessException("identifier type cannot be unspecified"), nil
-	}
-	if props.identifierValue == "" {
-		return exceptions.NewBusinessException("identifier value cannot be empty"), nil
-	}
-	if props.password == "" {
-		return exceptions.NewBusinessException("password cannot be empty"), nil
-	}
-	if props.userInfo == nil {
-		return exceptions.NewBusinessException("user info cannot be nil"), nil
-	}
+type AuthProps struct {
+	ID    string
+	IdentifierType IdentifierType
+	IdentifierValue string
+	Password string
+	UserInfo UserInfo
+	EncryptToken bool
+	LastLoginAt *time.Time
+	WrongAttempts int
+	MaxWrongAttempts *int
+	RecoveryToken *string
+	MaxTokenAgeSeconds *int
+}
 
-	identifier := IdentifierType_name[int32(props.identifierType)]
+func NewAuth(props AuthProps) (Auth, *exceptions.BusinessException) {
+	if props.IdentifierType == 0 {
+		return nil, exceptions.NewBusinessException("identifier type cannot be unspecified")
+	}
+	if props.IdentifierValue == "" {
+		return nil, exceptions.NewBusinessException("identifier value cannot be empty")
+	}
+	if props.Password == "" {
+		return nil, exceptions.NewBusinessException("password cannot be empty")
+	}
+	if props.UserInfo == nil {
+		return nil, exceptions.NewBusinessException("user info cannot be nil")
+	}
 
 	newAuth := &auth{
-		id:              props.id,
-		identifierType:  identifier,
-		identifierValue: props.identifierValue,
-		password:        props.password,
-		userInfo:        props.userInfo,
-		encryptToken:    props.encryptToken,
-		lastLoginAt:     props.lastLoginAt,
-		wrongAttempts:   props.wrongAttempts,
-		maxWrongAttempts: props.maxWrongAttempts,
-		recoveryToken:   props.recoveryToken,
-		createdAt:       props.createdAt,
+		id:              props.ID,
+		identifierType:  props.IdentifierType,
+		identifierValue: props.IdentifierValue,
+		password:        props.Password,
+		userInfo:        props.UserInfo,
+		encryptToken:    props.EncryptToken,
+		lastLoginAt:     props.LastLoginAt,
+		wrongAttempts:   props.WrongAttempts,
+		maxWrongAttempts: props.MaxWrongAttempts,
+		recoveryToken:   props.RecoveryToken,
 	}
 
 	if newAuth.id == "" {
 		newAuth.id = utils.GenerateUUID()
-	}
-	if newAuth.createdAt == nil {
-		now := time.Now()
-		newAuth.createdAt = &now
 	}
 	if newAuth.maxWrongAttempts == nil {
 		defaultMaxWrongAttempts := 5
@@ -98,14 +88,18 @@ func NewAuth(props AuthProps) (*exceptions.BusinessException, Auth) {
 		newAuth.maxTokenAgeSeconds = &defaultMaxTokenAgeSeconds
 	}
 
-	return nil, newAuth
+	return newAuth, nil
+}
+
+func LoadAuth(props AuthProps) (Auth, *exceptions.BusinessException) {
+	return NewAuth(props)
 }
 
 func (a *auth) GetID() string {
 	return a.id
 }
 
-func (a *auth) GetIdentifierType() string {
+func (a *auth) GetIdentifierType() IdentifierType {
 	return a.identifierType
 }
 
@@ -137,14 +131,10 @@ func (a *auth) GetMaxWrongAttempts() *int {
 	return a.maxWrongAttempts
 }
 
-func (a *auth) GetRecoveryToken() string {
+func (a *auth) GetRecoveryToken() *string {
 	return a.recoveryToken
 }
 
 func (a *auth) GetMaxTokenAgeSeconds() *int {
 	return a.maxTokenAgeSeconds
-}
-
-func (a *auth) GetCreatedAt() *time.Time {
-	return a.createdAt
 }

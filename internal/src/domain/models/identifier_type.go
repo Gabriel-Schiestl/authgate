@@ -10,6 +10,10 @@ const (
 	IdentifierPhone       IdentifierType = 4
 )
 
+func (x IdentifierType) String() string {
+	return IdentifierType_name[int32(x)]
+}
+
 var (
 	IdentifierType_name = map[int32]string{
 		0: "unspecified",
