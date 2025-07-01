@@ -1,6 +1,8 @@
 package adapters
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -22,7 +24,7 @@ func NewJWTService() services.IJWTService {
     }
 }
 
-func (s *jwtService) GenerateToken(userID string, roles []string, exp int) (*string, error) {
+func (s *jwtService) GenerateToken(ctx context.Context, userID string, roles []string, exp int) (*string, error) {
     claims := jwt.MapClaims{
         "sub":   userID,
         "roles": strings.Join(roles, ","),
@@ -40,7 +42,7 @@ func (s *jwtService) GenerateToken(userID string, roles []string, exp int) (*str
     return &tokenString, nil
 }
 
-func (s *jwtService) GenerateRefreshToken(userID string, exp int) (*string, error) {
+func (s *jwtService) GenerateRefreshToken(ctx context.Context, userID string, exp int) (*string, error) {
     claims := jwt.MapClaims{
         "sub":  userID,
         "type": "refresh",
@@ -57,7 +59,7 @@ func (s *jwtService) GenerateRefreshToken(userID string, exp int) (*string, erro
     return &tokenString, nil
 }
 
-func (s *jwtService) ExtractClaims(token string) (map[string]interface{}, error) {
+func (s *jwtService) ExtractClaims(ctx context.Context, token string) (map[string]interface{}, error) {
     parsedToken, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
         if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
             return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
@@ -66,6 +68,10 @@ func (s *jwtService) ExtractClaims(token string) (map[string]interface{}, error)
     })
 
     if err != nil {
+        if errors.Is(err, jwt.ErrTokenExpired) {
+            return nil, fmt.Errorf("token expired")
+        }
+
         return nil, fmt.Errorf("error parsing token: %w", err)
     }
 
@@ -76,7 +82,7 @@ func (s *jwtService) ExtractClaims(token string) (map[string]interface{}, error)
     return nil, fmt.Errorf("invalid token")
 }
 
-func (s *jwtService) ExtractRefreshClaims(token string) (map[string]interface{}, error) {
+func (s *jwtService) ExtractRefreshClaims(ctx context.Context, token string) (map[string]interface{}, error) {
     parsedToken, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
         if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
             return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])

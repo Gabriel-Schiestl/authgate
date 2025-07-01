@@ -9,6 +9,7 @@ service AuthService {
     rpc Register(RegisterRequest) returns (RegisterResponse);
     rpc VerifyToken(VerifyTokenRequest) returns (VerifyTokenResponse);
     rpc DeleteAuth(DeleteAuthRequest) returns (DeleteAuthResponse);
+    rpc RefreshToken(VerifyTokenRequest) returns (VerifyTokenResponse);
 }
 
 enum IdentifierType {
@@ -63,10 +64,8 @@ message VerifyTokenRequest {
 
 message VerifyTokenResponse {
     bool success = 1;
-    string user_id = 2;
-    string name = 3;
-    repeated string roles = 4;
-    optional string error_message = 5;
+    UserInfo user_info = 2;
+    optional string error_message = 3;
 }
 
 message DeleteAuthRequest {
@@ -76,4 +75,15 @@ message DeleteAuthRequest {
 message DeleteAuthResponse {
     bool success = 1;
     optional string error_message = 2;
+}
+
+message RefreshTokenRequest {
+    string refresh_token = 1;
+}
+
+message RefreshTokenResponse {
+    bool success = 1;
+    string access_token = 2;
+    optional string error_message = 3;
+    UserInfo user_info = 4;
 }

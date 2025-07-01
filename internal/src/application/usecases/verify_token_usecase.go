@@ -27,7 +27,7 @@ func (luc verifyTokenUsecase) Execute(ctx context.Context, props dtos.VerifyToke
 		return nil, exceptions.NewBusinessException("access token is required")
 	}
 
-	claims, err := luc.jwtService.ExtractClaims(props.AccessToken)
+	claims, err := luc.jwtService.ExtractClaims(ctx, props.AccessToken)
 	if err != nil {
 		return nil, exceptions.NewBusinessException("invalid access token")
 	}

@@ -34,6 +34,7 @@ func (luc loginUsecase) Execute(ctx context.Context, props dtos.LoginDTO) (*dtos
     }
 
     accessToken, err := luc.jwtService.GenerateToken(
+        ctx,
         auth.GetUserInfo().GetUserID(), 
         auth.GetUserInfo().GetRoles(), 
         *auth.GetMaxTokenAgeSeconds(),
@@ -44,6 +45,7 @@ func (luc loginUsecase) Execute(ctx context.Context, props dtos.LoginDTO) (*dtos
 
     refreshTokenExpiry := 7 * 24 * 60 * 60
     refreshToken, err := luc.jwtService.GenerateRefreshToken(
+        ctx,
         auth.GetUserInfo().GetUserID(),
         refreshTokenExpiry,
     )
