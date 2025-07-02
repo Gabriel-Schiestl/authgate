@@ -2,10 +2,10 @@ package main
 
 import (
 	"log"
-	"os"
 
-	"github.com/Gabriel-Schiestl/authgate/internal/src/infra/database/connection"
+	"github.com/Gabriel-Schiestl/authgate/internal/src/module"
 	"github.com/joho/godotenv"
+	"go.uber.org/fx"
 )
 
 func main() {
@@ -14,6 +14,7 @@ func main() {
 		log.Fatalf("Error loading env: %v", err)
 	}
 
-	sqlDb := connection.SetupConfig(os.Getenv("DB_HOST"), os.Getenv("DB_USER"), os.Getenv("DB_PASSWORD"), os.Getenv("DB_PORT"), os.Getenv("DB_NAME"))
-	defer sqlDb.Close()
+	app := fx.New(module.Module())
+
+	app.Run()
 }
