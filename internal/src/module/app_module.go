@@ -28,6 +28,10 @@ func Module() fx.Option {
 				adapters.NewJWTService,
 				fx.As(new(services.IJWTService)),
 			),
+			fx.Annotate(
+				adapters.NewEncryptService,
+				fx.As(new(services.IEncryptService)),
+			),
 			usecases.NewLoginUsecase,
 			usecases.NewRegisterUsecase,
 			usecases.NewVerifyTokenUsecase,

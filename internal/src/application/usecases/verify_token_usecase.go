@@ -13,18 +13,25 @@ import (
 type verifyTokenUsecase struct {
 	authRepo repositories.IAuthRepository
 	jwtService services.IJWTService
+	encryptService services.IEncryptService
 }
 
-func NewVerifyTokenUsecase(authRepo repositories.IAuthRepository, jwtService services.IJWTService) usecase.UseCaseWithProps[dtos.VerifyTokenDTO, *dtos.UserInfoDTO] {
+func NewVerifyTokenUsecase(authRepo repositories.IAuthRepository, jwtService services.IJWTService, encryptService services.IEncryptService) usecase.UseCaseWithProps[dtos.VerifyTokenDTO, *dtos.UserInfoDTO] {
 	return &verifyTokenUsecase{
 		authRepo: authRepo,
 		jwtService: jwtService,
+		encryptService: encryptService,
 	}
 }
 
 func (luc verifyTokenUsecase) Execute(ctx context.Context, props dtos.VerifyTokenDTO) (*dtos.UserInfoDTO, error) {
 	if props.AccessToken == "" {
 		return nil, exceptions.NewBusinessException("access token is required")
+	}
+
+	token, _ := luc.encryptService.Decrypt(ctx, props.AccessToken)
+	if token != "" {
+		props.AccessToken = token
 	}
 
 	claims, err := luc.jwtService.ExtractClaims(ctx, props.AccessToken)

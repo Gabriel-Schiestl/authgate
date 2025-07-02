@@ -2,6 +2,7 @@ package usecases
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/Gabriel-Schiestl/authgate/internal/src/application/dtos"
 	"github.com/Gabriel-Schiestl/authgate/internal/src/domain/repositories"
@@ -14,12 +15,14 @@ import (
 type loginUsecase struct {
 	authRepo repositories.IAuthRepository
 	jwtService services.IJWTService
+    encryptService services.IEncryptService
 }
 
-func NewLoginUsecase(authRepo repositories.IAuthRepository, jwtService services.IJWTService) usecase.UseCaseWithProps[dtos.LoginDTO, *dtos.LoginResponseDTO] {
+func NewLoginUsecase(authRepo repositories.IAuthRepository, jwtService services.IJWTService, encryptService services.IEncryptService) usecase.UseCaseWithProps[dtos.LoginDTO, *dtos.LoginResponseDTO] {
 	return &loginUsecase{
 		authRepo: authRepo,
 		jwtService: jwtService,
+        encryptService: encryptService,
 	}
 }
 
@@ -51,6 +54,19 @@ func (luc loginUsecase) Execute(ctx context.Context, props dtos.LoginDTO) (*dtos
     )
     if err != nil {
         return nil, err
+    }
+
+    if auth.GetEncryptToken() {
+        accessToken, err = luc.encryptService.Encrypt(ctx, *accessToken)
+        if err != nil {
+            fmt.Println("Failed to encrypt access token:", err)
+            return nil, exceptions.NewBusinessException("failed to encrypt access token")
+        }
+
+        refreshToken, err = luc.encryptService.Encrypt(ctx, *refreshToken)
+        if err != nil {
+            return nil, exceptions.NewBusinessException("failed to encrypt refresh token")
+        }
     }
 
     return &dtos.LoginResponseDTO{
