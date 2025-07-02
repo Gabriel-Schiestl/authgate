@@ -34,7 +34,7 @@ func NewController(
 }
 
 func (c *Controller) Login(ctx context.Context, dto dtos.LoginDTO) (*dtos.LoginResponseDTO, error) {
-	response, err := c.loginUsecase.Execute(ctx, dto)
+	response, err := usecase.ExecuteUseCaseWithProps(ctx, c.loginUsecase, dto)
 	if err != nil {
 		return nil, err
 	}
@@ -43,7 +43,7 @@ func (c *Controller) Login(ctx context.Context, dto dtos.LoginDTO) (*dtos.LoginR
 }
 
 func (c *Controller) Register(ctx context.Context, dto dtos.RegisterDTO) (*dtos.RegisterResponseDTO, error) {
-	response, err := c.registerUsecase.Execute(ctx, dto)
+	response, err := usecase.ExecuteUseCaseWithProps(ctx, c.registerUsecase, dto)
 	if err != nil {
 		return nil, err
 	}
@@ -52,7 +52,7 @@ func (c *Controller) Register(ctx context.Context, dto dtos.RegisterDTO) (*dtos.
 }
 
 func (c *Controller) RefreshToken(ctx context.Context, dto dtos.RefreshTokenDTO) (*dtos.RefreshTokenResponseDTO, error) {
-	response, err := c.refreshUsecase.Execute(ctx, dto)
+	response, err := usecase.ExecuteUseCaseWithProps(ctx, c.refreshUsecase, dto)
 	if err != nil {
 		return nil, err
 	}
@@ -61,7 +61,7 @@ func (c *Controller) RefreshToken(ctx context.Context, dto dtos.RefreshTokenDTO)
 }
 
 func (c *Controller) VerifyToken(ctx context.Context, dto dtos.VerifyTokenDTO) (*dtos.UserInfoDTO, error) {
-	response, err := c.verifyUsecase.Execute(ctx, dto)
+	response, err := usecase.ExecuteUseCaseWithProps(ctx, c.verifyUsecase, dto)
 	if err != nil {
 		return nil, err
 	}
@@ -70,7 +70,7 @@ func (c *Controller) VerifyToken(ctx context.Context, dto dtos.VerifyTokenDTO) (
 }
 
 func (c *Controller) DeleteAuth(ctx context.Context, userID string) error {
-	_, err := c.deleteAuthUsecase.Execute(ctx, userID)
+	_, err := usecase.ExecuteUseCaseWithProps(ctx, c.deleteAuthUsecase, userID)
 	if err != nil {
 		return err
 	}
