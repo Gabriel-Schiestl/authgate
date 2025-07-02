@@ -113,7 +113,13 @@ func (s *AuthServiceServer) RefreshToken(ctx context.Context, req *authpb.Refres
 		return nil, err
 	}
 	return &authpb.RefreshTokenResponse{
+		Success: true,
 		AccessToken: response.AccessToken,
+		UserInfo: &authpb.UserInfo{
+			UserId: response.UserInfo.UserID,
+			Name:  response.UserInfo.Name,
+			Roles: response.UserInfo.Roles,
+		},
 	}, nil
 }
 

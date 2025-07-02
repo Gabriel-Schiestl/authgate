@@ -51,8 +51,8 @@ func (luc refreshTokenUsecase) Execute(ctx context.Context, props dtos.RefreshTo
 		AccessToken: *newAccessToken,
 		UserInfo: dtos.UserInfoDTO{
 			UserID: auth.GetUserInfo().GetUserID(),
-		Name:   auth.GetUserInfo().GetName(),
-		Roles:  auth.GetUserInfo().GetRoles(),
+			Name:   auth.GetUserInfo().GetName(),
+			Roles:  auth.GetUserInfo().GetRoles(),
 		},
 	}, nil
 }
