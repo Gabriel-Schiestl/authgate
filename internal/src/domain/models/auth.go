@@ -74,8 +74,9 @@ func NewAuth(props AuthProps) (Auth, *exceptions.BusinessException) {
 		wrongAttempts:   props.WrongAttempts,
 		maxWrongAttempts: props.MaxWrongAttempts,
 		recoveryToken:   props.RecoveryToken,
+		maxTokenAgeSeconds: props.MaxTokenAgeSeconds,
 	}
-
+	
 	if newAuth.id == "" {
 		newAuth.id = utils.GenerateUUID()
 	}

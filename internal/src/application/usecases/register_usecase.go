@@ -2,7 +2,6 @@ package usecases
 
 import (
 	"context"
-	"sync"
 
 	"github.com/Gabriel-Schiestl/authgate/internal/src/application/dtos"
 	"github.com/Gabriel-Schiestl/authgate/internal/src/domain/models"
@@ -16,6 +15,11 @@ type registerUsecase struct {
 	authRepo repositories.IAuthRepository
 }
 
+type checkResult struct {
+	exists bool
+	err    error
+}
+
 func NewRegisterUsecase(authRepo repositories.IAuthRepository) usecase.UseCaseWithProps[dtos.RegisterDTO, *dtos.RegisterResponseDTO] {
 	return &registerUsecase{
 		authRepo: authRepo,
@@ -27,36 +31,35 @@ func (luc registerUsecase) Execute(ctx context.Context, props dtos.RegisterDTO) 
 		return nil, exceptions.NewBusinessException("identifier type, identifier value, and password are required")
 	}
 
-	userExistsChan := make(chan models.Auth, 2)
-	wg := sync.WaitGroup{}
-	wg.Add(2)
+	userIDChan := make(chan checkResult, 1)
+    identifierChan := make(chan checkResult, 1)
 
-	go func() {
-		defer wg.Done()
-		userExists, _ := luc.authRepo.GetByUserID(ctx, props.UserInfo.UserID)
-		if userExists != nil {
-			userExistsChan <- userExists
-		}
-	}()
+    // Verificar UserID em paralelo
+    go func() {
+        auth, err := luc.authRepo.GetByUserID(ctx, props.UserInfo.UserID)
+        userIDChan <- checkResult{
+            exists: auth != nil && err == nil,
+            err:    err,
+        }
+    }()
 
-	go func() {
-		defer wg.Done()
-		userExists, _ := luc.authRepo.GetByIdentifier(ctx, int(props.IdentifierType), props.IdentifierValue)
-		if userExists != nil {
-			userExistsChan <- userExists
-		}
-	}()
+    go func() {
+        auth, err := luc.authRepo.GetByIdentifier(ctx, int(props.IdentifierType), props.IdentifierValue)
+        identifierChan <- checkResult{
+            exists: auth != nil && err == nil,
+            err:    err,
+        }
+    }()
 
-	go func() {
-		wg.Wait()
-		close(userExistsChan)
-	}()
-	
-	for userExists := range userExistsChan {
-		if userExists != nil {
-			return nil, exceptions.NewBusinessException("auth already exists")
-		}
-	}
+    userIDResult := <-userIDChan
+    identifierResult := <-identifierChan
+
+    if userIDResult.exists {
+        return nil, exceptions.NewBusinessException("user with this ID already exists")
+    }
+    if identifierResult.exists {
+        return nil, exceptions.NewBusinessException("user with this identifier already exists")
+    }
 
 	userInfo, err := models.NewUserInfo(models.UserInfoProps{
 		UserID: props.UserInfo.UserID,
@@ -71,7 +74,7 @@ func (luc registerUsecase) Execute(ctx context.Context, props dtos.RegisterDTO) 
 	if er != nil {
 		return nil, exceptions.NewBusinessException("failed to hash password")
 	}
-	
+
 	auth, err := models.NewAuth(models.AuthProps{
 		IdentifierType:     models.IdentifierType(props.IdentifierType),
 		IdentifierValue:    props.IdentifierValue,
@@ -90,7 +93,7 @@ func (luc registerUsecase) Execute(ctx context.Context, props dtos.RegisterDTO) 
 	}
 
 	return &dtos.RegisterResponseDTO{
-		IdentifierType: auth.GetIdentifierType().String(),
+		IdentifierType: auth.GetIdentifierType(),
 		IdentifierValue: auth.GetIdentifierValue(),
 		UserInfo: dtos.UserInfoDTO{
 			UserID: auth.GetUserInfo().GetUserID(),

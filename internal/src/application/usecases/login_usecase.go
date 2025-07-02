@@ -24,7 +24,7 @@ func NewLoginUsecase(authRepo repositories.IAuthRepository, jwtService services.
 }
 
 func (luc loginUsecase) Execute(ctx context.Context, props dtos.LoginDTO) (*dtos.LoginResponseDTO, error) {
-    auth, err := luc.authRepo.GetByIdentifier(ctx, props.IdentifierType, props.IdentifierValue)
+    auth, err := luc.authRepo.GetByIdentifier(ctx, int(props.IdentifierType), props.IdentifierValue)
     if err != nil {
         return nil, err
     }

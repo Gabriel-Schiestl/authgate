@@ -1,9 +1,11 @@
 package dtos
 
+import "github.com/Gabriel-Schiestl/authgate/internal/src/domain/models"
+
 type LoginDTO struct {
-	IdentifierType  int    `json:"identifier_type"`
-	IdentifierValue string `json:"identifier_value"`
-	Password        string `json:"password"`
+	IdentifierType  models.IdentifierType `json:"identifier_type"`
+	IdentifierValue string              `json:"identifier_value"`
+	Password        string              `json:"password"`
 }
 
 type LoginResponseDTO struct {

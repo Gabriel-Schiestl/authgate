@@ -1,8 +1,8 @@
 package connection
 
 import (
-	"database/sql"
 	"log"
+	"os"
 	"strconv"
 
 	"github.com/Gabriel-Schiestl/authgate/internal/src/config"
@@ -11,28 +11,20 @@ import (
 	"gorm.io/gorm"
 )
 
-var DbConfig *config.DbConfig
-var Db *gorm.DB
-
-func SetupConfig(host, user, password, port, name string) *sql.DB {
-	dbPort, err := strconv.Atoi(port)
+func SetupConfig() *gorm.DB {
+	dbPort, err := strconv.Atoi(os.Getenv("DB_PORT"))
 	if err != nil {
 		log.Fatalf("Error converting DB_PORT to int")
 	}
 
-	DbConfig = config.NewDbConfig(host, user, password, name, dbPort)
+	dbConfig := config.NewDbConfig(os.Getenv("DB_HOST"), os.Getenv("DB_USER"), os.Getenv("DB_PASSWORD"), os.Getenv("DB_NAME"), dbPort)
 
-	Db, err = gorm.Open(postgres.Open(DbConfig.ToString()), &gorm.Config{})
+	db, err := gorm.Open(postgres.Open(dbConfig.ToString()), &gorm.Config{})
 	if err != nil {
 		log.Fatalf("Error connecting to database: %v", err)
 	}
 
-	sqlDb, err := Db.DB()
-	if err != nil {
-		log.Fatalf("Error getting DB connection: %v", err)
-	}
+	db.AutoMigrate(entities.Auth{}, entities.UserInfo{})
 
-	Db.AutoMigrate(entities.Auth{}, entities.UserInfo{})
-
-	return sqlDb
+	return db
 }

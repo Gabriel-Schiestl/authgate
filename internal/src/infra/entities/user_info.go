@@ -1,10 +1,12 @@
 package entities
 
-import "github.com/Gabriel-Schiestl/authgate/internal/src/utils"
+import (
+	"github.com/lib/pq"
+)
 
 type UserInfo struct {
-	UserID string  `gorm:"primaryKey;type:uuid"`
-	Name   string  `gorm:"not null"`
-	Roles  utils.StringArray `gorm:"type:text[];default:null"`
-	AuthID string            `gorm:"not null;type:uuid;constraint:OnDelete:CASCADE"`
+	UserID  string         `gorm:"primaryKey;column:user_id" json:"user_id"`
+	Name    string         `gorm:"column:name" json:"name"`
+	AuthID  string         `gorm:"column:auth_id" json:"auth_id"`
+	Roles   pq.StringArray `gorm:"type:text[];column:roles" json:"roles"`
 }
