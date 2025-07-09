@@ -1,13 +1,12 @@
 services:
   app:
-    image: authgate:latest
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: gabrielschiestl/authgate:latest
     ports:
       - "50051:50051"
     env_file:
       - .env
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     networks:
       - authgate-network
 

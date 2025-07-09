@@ -1,4 +1,4 @@
-FROM go:1.24-alpine AS build
+FROM golang:1.24-alpine AS build
 
 WORKDIR /app
 
@@ -21,7 +21,6 @@ RUN addgroup -g 1001 -S appgroup && \
 WORKDIR /app
 
 COPY --from=build /app/main .
-COPY --from=build /app/.env .
 
 RUN chown -R appuser:appgroup /app
 
