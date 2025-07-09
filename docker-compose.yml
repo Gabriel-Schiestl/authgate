@@ -1,0 +1,16 @@
+services:
+  app:
+    image: authgate:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "50051:50051"
+    env_file:
+      - .env
+    networks:
+      - authgate-network
+
+networks:
+  authgate-network:
+    driver: bridge
